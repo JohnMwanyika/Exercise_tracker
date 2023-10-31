@@ -32,14 +32,37 @@ app.route("/api/users")
       await newUser.save();
       return res.json({ username: newUser.username, _id: newUser._id });
     }
-    res.json({ error: `${username} already exists` });
+    res.json({ error: `${username} already exists`, _id: isExist._id });
 
   });
 
 app.post("/api/users/:_id/exercises", async (req, res) => {
-  const { _id, description, duration, date } = req.params;
+  const { description, duration, date } = req.body;
+  const { _id } = req.params || req.body;
+  console.log({ _id, description, duration, date });
 
-  const newExercise = await new Exercise({ username })
+  // if (!_id || !description || !duration || !date) {
+  //   return res.json({ error: 'All fields are required' });
+  // };
+  const newDate = new Date(date).toDateString();
+  console.log(newDate);
+  const user = await User.findOne({ _id });
+  // check if user exists
+  if (!user) return res.json({ error: 'User not found!' });
+  // create new user
+  const newExercise = await new Exercise({
+    username: user.username,
+    description,
+    duration,
+    date: newDate
+  });
+  await newExercise.save();
+  res.json({
+    username: newExercise.username,
+    description: newExercise.description,
+    duration: newExercise.duration,
+    date: newExercise.date.toDateString()
+  });
 });
 
 
