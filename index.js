@@ -58,6 +58,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   });
   await newExercise.save();
   res.json({
+    _id,
     username: newExercise.username,
     description: newExercise.description,
     duration: newExercise.duration,
