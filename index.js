@@ -65,7 +65,58 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   });
 });
 
+app.get("/api/users/:_id/logs", async (req, res) => {
+  const { _id } = req.params || req.body;
+  let { from, to, limit } = req.query;
+  console.log({ _id, from, to, limit })
 
+  try {
+
+    // find user with the specified ID
+    const user = await User.findById(_id);
+    console.log('user is', user)
+    // check if user is valid
+    if (!user) return res.json({ error: 'Invalid user Id' });
+
+    // validate dates
+    if (from) {
+      from = new Date(from);
+      if (from == "Invalid Date") return res.json({ error: "Invalid from date" })
+    }
+    if (to) {
+      to = new Date(to);
+      if (to == "Invalid Date") return res.json({ error: "Invalid to date" })
+    }
+    // validate limit
+    if (limit) {
+      limit = new Number(limit);
+      if (limit == NaN) return res.json({ error: 'Invalid limit' });
+    }
+
+
+    // let results = { _id, username: user?.username, from: from?.toDateString(), to: to?.toDateString() };
+    // let dateFilter = { "$gte": from, "$lt": to };
+
+    // if (from) {
+    //   results.from = from.toDateString();
+    //   dateFilter.$gte = from;
+    //   if (to) {
+    //     results.to = to.toDateString();
+    //     dateFilter.$lt = to;
+    //   }
+    // }
+    let filter = { username: user.username, date: { $gt: from, $lt: to } };
+    // get valid user exercises
+    const exercise = await Exercise.find(filter).limit(limit);
+    const count = await Exercise.count(filter);
+    res.json({ _id, username: user.username, count, log: exercise });
+  } catch (error) {
+    console.warn(error)
+    res.json({ error: `Oops! ${error}` })
+  }
+
+
+})
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
