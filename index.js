@@ -54,7 +54,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     username: user.username,
     description,
     duration,
-    date: newDate
+    date: newDate || new Date()
   });
   await newExercise.save();
   res.json({
@@ -107,6 +107,9 @@ app.get("/api/users/:_id/logs", async (req, res) => {
     //   }
     // }
     let filter = { username: user.username, date: { $gt: from, $lt: to } };
+    if (!from || !to) {
+      delete filter.date;
+    }
     // get valid user exercises
     const exercise = await Exercise.find(filter).limit(limit);
     const count = await Exercise.count(filter);
